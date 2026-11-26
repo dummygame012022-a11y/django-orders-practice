@@ -1,0 +1,9 @@
+<h1>Orders</h1>
+<p><a href="{% url 'order_add' %}">+ Add order</a></p>
+<ul>
+{% for o in orders %}
+  <li>{{ o }} - <a href="{% url 'order_edit' o.pk %}">Edit</a> | <a href="{% url 'order_delete' o.pk %}">Delete</a></li>
+{% empty %}
+  <li>Walay order pa.</li>
+{% endfor %}
+</ul>

@@ -1,0 +1,7 @@
+<h1>Delete order</h1>
+<p>Sigurado ka ba nga i-delete ang {{ order }}?</p>
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Oo, i-delete</button>
+</form>
+<p><a href="{% url 'order_list' %}">Dili, balik sa lista</a></p>
