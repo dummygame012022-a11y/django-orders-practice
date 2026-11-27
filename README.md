@@ -19,4 +19,17 @@ Then open /orders/ or /admin/.
 
 ## Stack
 
-Django, SQLite (PostgreSQL planned).
+Django, PostgreSQL (SQLite fallback).
+
+## Config (.env)
+
+Himoa ang `.env` file sa root sa project (dili kini i-commit). Pananglitan, placeholder ra:
+
+    DEBUG=True
+    SECRET_KEY=ibutang-dinhi-ang-imong-kaugalingong-key
+    DB_NAME=orders_practice
+    DB_USER=imong-db-user
+
+- Kung walay `DB_NAME`, SQLite ang gamiton.
+- Kung walay `DEBUG=True`, `False` ang default.
+
