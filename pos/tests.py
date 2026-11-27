@@ -77,3 +77,55 @@ class SaleTest(TestCase):
         SaleItem.objects.create(sale=sale, product=self.coffee, qty=1)
         with self.assertRaises(ProtectedError):
             self.coffee.delete()
+
+
+class SalePageTest(TestCase):
+    def setUp(self):
+        self.coffee = Product.objects.create(
+            name="Fake Coffee", price=Decimal("50.00")
+        )
+        self.tea = Product.objects.create(
+            name="Fake Tea", price=Decimal("30.00")
+        )
+
+    def test_form_page_shows_products(self):
+        response = self.client.get("/pos/sale/new/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Fake Coffee")
+
+    def test_valid_sale_redirects_to_detail(self):
+        response = self.client.post(
+            "/pos/sale/new/",
+            {f"qty_{self.coffee.pk}": "2", f"qty_{self.tea.pk}": "0"},
+        )
+        sale = Sale.objects.get()
+        self.assertRedirects(response, f"/pos/sale/{sale.pk}/")
+        self.assertEqual(sale.items.count(), 1)
+
+    def test_detail_shows_total(self):
+        self.client.post(
+            "/pos/sale/new/",
+            {f"qty_{self.coffee.pk}": "2", f"qty_{self.tea.pk}": "1"},
+        )
+        sale = Sale.objects.get()
+        response = self.client.get(f"/pos/sale/{sale.pk}/")
+        self.assertContains(response, "Total: 130.00")
+
+    def test_no_items_shows_error(self):
+        response = self.client.post(
+            "/pos/sale/new/",
+            {f"qty_{self.coffee.pk}": "0", f"qty_{self.tea.pk}": "0"},
+        )
+        self.assertContains(response, "Pili ug labing menos usa")
+        self.assertEqual(Sale.objects.count(), 0)
+
+    def test_bad_qty_is_ignored(self):
+        response = self.client.post(
+            "/pos/sale/new/", {f"qty_{self.coffee.pk}": "abc"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Sale.objects.count(), 0)
+
+    def test_missing_sale_returns_404(self):
+        response = self.client.get("/pos/sale/9999/")
+        self.assertEqual(response.status_code, 404)

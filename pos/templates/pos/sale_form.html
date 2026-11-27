@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>New sale</title>
+</head>
+<body>
+    <h1>New sale</h1>
+    {% if error %}
+        <p><strong>{{ error }}</strong></p>
+    {% endif %}
+    {% if products %}
+        <form method="post">
+            {% csrf_token %}
+            <ul>
+            {% for p in products %}
+                <li>
+                    {{ p.name }} - {{ p.price }}
+                    <input type="number" name="qty_{{ p.pk }}" value="0" min="0">
+                </li>
+            {% endfor %}
+            </ul>
+            <button type="submit">Checkout</button>
+        </form>
+    {% else %}
+        <p>Walay produkto pa.</p>
+    {% endif %}
+</body>
+</html>
