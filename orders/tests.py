@@ -2,10 +2,15 @@ from django.test import TestCase
 
 # Create your tests here.
 
+from django.contrib.auth.models import User
+
 from .models import Order
 
 
 class OrderListTest(TestCase):
+    def setUp(self):
+        self.client.force_login(User.objects.create_user("fakecashier"))
+
     def test_list_shows_order(self):
         Order.objects.create(order="T001", item="Fake", qty=3)
         response = self.client.get("/orders/")
@@ -18,6 +23,9 @@ class OrderListTest(TestCase):
 
 
 class OrderCrudTest(TestCase):
+    def setUp(self):
+        self.client.force_login(User.objects.create_user("fakecashier"))
+
     def test_add_order(self):
         response = self.client.post(
             "/orders/add/", {"order": "T002", "item": "Fake", "qty": 2}
@@ -49,3 +57,21 @@ class OrderCrudTest(TestCase):
     def test_edit_missing_returns_404(self):
         response = self.client.get("/orders/9999/edit/")
         self.assertEqual(response.status_code, 404)
+
+
+class OrdersLoginRequiredTest(TestCase):
+    def test_list_requires_login(self):
+        response = self.client.get("/orders/")
+        self.assertRedirects(
+            response,
+            "/accounts/login/?next=/orders/",
+            fetch_redirect_response=False,
+        )
+
+    def test_add_requires_login(self):
+        response = self.client.get("/orders/add/")
+        self.assertRedirects(
+            response,
+            "/accounts/login/?next=/orders/add/",
+            fetch_redirect_response=False,
+        )

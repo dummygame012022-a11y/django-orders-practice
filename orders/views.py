@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 # Create your views here.
@@ -6,6 +7,7 @@ from django.shortcuts import render
 from .models import Order
 
 
+@login_required
 def order_list(request):
     orders = Order.objects.all()
     return render(request, "orders/order_list.html", {"orders": orders})
@@ -14,6 +16,7 @@ from django.shortcuts import redirect
 from .forms import OrderForm
 
 
+@login_required
 def order_add(request):
     if request.method == "POST":
         form = OrderForm(request.POST)
@@ -27,6 +30,7 @@ def order_add(request):
 from django.shortcuts import get_object_or_404
 
 
+@login_required
 def order_edit(request, pk):
     order = get_object_or_404(Order, pk=pk)
     if request.method == "POST":
@@ -39,6 +43,7 @@ def order_edit(request, pk):
     return render(request, "orders/order_form.html", {"form": form})
 
 
+@login_required
 def order_delete(request, pk):
     order = get_object_or_404(Order, pk=pk)
     if request.method == "POST":
