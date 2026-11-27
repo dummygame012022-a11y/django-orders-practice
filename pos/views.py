@@ -1,14 +1,17 @@
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Product, Sale, SaleItem
 
 
+@login_required
 def product_list(request):
     products = Product.objects.select_related("category").all()
     return render(request, "pos/product_list.html", {"products": products})
 
 
+@login_required
 def sale_new(request):
     products = Product.objects.select_related("category").all()
     error = None
@@ -34,6 +37,7 @@ def sale_new(request):
     )
 
 
+@login_required
 def sale_detail(request, pk):
     sale = get_object_or_404(Sale, pk=pk)
     return render(request, "pos/sale_detail.html", {"sale": sale})

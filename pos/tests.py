@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.test import TestCase
 
+from django.contrib.auth.models import User
 from django.db.models import ProtectedError
 
 from .models import Category, Product, Sale, SaleItem
@@ -30,6 +31,9 @@ class PosModelTest(TestCase):
 
 
 class ProductListTest(TestCase):
+    def setUp(self):
+        self.client.force_login(User.objects.create_user("fakecashier"))
+
     def test_list_shows_product(self):
         c = Category.objects.create(name="Fake Drinks")
         Product.objects.create(
@@ -81,6 +85,7 @@ class SaleTest(TestCase):
 
 class SalePageTest(TestCase):
     def setUp(self):
+        self.client.force_login(User.objects.create_user("fakecashier"))
         self.coffee = Product.objects.create(
             name="Fake Coffee", price=Decimal("50.00")
         )
@@ -129,3 +134,26 @@ class SalePageTest(TestCase):
     def test_missing_sale_returns_404(self):
         response = self.client.get("/pos/sale/9999/")
         self.assertEqual(response.status_code, 404)
+
+
+class LoginRequiredTest(TestCase):
+    def test_products_requires_login(self):
+        response = self.client.get("/pos/products/")
+        self.assertRedirects(
+            response,
+            "/accounts/login/?next=/pos/products/",
+            fetch_redirect_response=False,
+        )
+
+    def test_new_sale_requires_login(self):
+        response = self.client.get("/pos/sale/new/")
+        self.assertRedirects(
+            response,
+            "/accounts/login/?next=/pos/sale/new/",
+            fetch_redirect_response=False,
+        )
+
+    def test_login_page_loads(self):
+        response = self.client.get("/accounts/login/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Login")
